@@ -1,9 +1,12 @@
 #include<stdio.h>
-#include<crypt.h>
 #include<string.h>
 #include <unistd.h>
+#include<crypt.h>
+#include<omp.h>
+#include "time_diff.h"
 
 int count=0;     // A counter used to track the number of combinations explored so far
+omp_lock_t lock; // a lock for critical sections
 
 void substr(char *dest, char *src, int start, int length){
   memcpy(dest, src + start, length);
@@ -27,16 +30,28 @@ void crack(char *salt_and_encrypted){
   substr(salt, salt_and_encrypted, 0, 11);
 
 
+#pragma omp parrallel for num_threads(7) shared(x,y,z,plain,enc,count)
   for(x='A'; x<='Z'; x++){
+    printf("asd__%d\n",omp_get_thread_num());
     for(y='A'; y<='Z'; y++){
       for(z=0; z<=99; z++){
+
         sprintf(plain, "%c%c%02d", x, y, z); 
         enc = (char *) crypt(plain, salt);
+
+        omp_set_lock(&lock);
         count++;
+  	    printf("#%-8d%s %s__%d\n", count, plain, enc,omp_get_thread_num());
+        omp_unset_lock(&lock);
 
         if(strcmp(salt_and_encrypted, enc) == 0){
-	    printf("#%-8d%s %s\n", count, plain, enc);
-		return;	
+        omp_set_lock(&lock);
+
+  	    printf("#%-8d%s %s__%d\n", count, plain, enc,omp_get_thread_num());
+	      // printf("#%-8d%s %s\n", count, plain, enc);
+        omp_unset_lock(&lock);
+        #pragma omp cancle for
+		    return;	
         }
       }
     }
@@ -45,8 +60,18 @@ void crack(char *salt_and_encrypted){
 
 void main(int argc, char *argv[]){
 
+  struct timespec start, finish;
+  long long int difference;
+  clock_gettime(CLOCK_MONOTONIC, &start);
+
   // passing the encrypted password to the crack function to decode it	
+//  #pragma omp parallel num_threads(7)
   crack("$6$Why_N0t$Wd.BpNdkJl8F9Q5szPGPvChN52rrtB5nOXro2rXaYuxggkKQ.UWTHwgTQu6ZA3FWOYIGD2YkgjKdx91GFvpr4/");	
+
   printf("%d solutions explored\n", count);
+
+  clock_gettime(CLOCK_MONOTONIC, &finish);
+  time_difference(&start, &finish, &difference);
+  printf("run lasted %9.5lfs\n", difference/1000000000.0); 
 
 }
