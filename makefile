@@ -1,7 +1,13 @@
-all: CrackPassword
-CrackPassword: CrackPassword.c time_diff.c time_diff.h
-	cc -o crack CrackPassword.c time_diff.c -lrt -lcrypt -fopenmp
+all: CrackPassword CrackPassword2 EncryptPassword
 
+CrackPassword: CrackPassword.c time_diff.c time_diff.h
+	gcc -o crack CrackPassword.c time_diff.c -lrt -lcrypt -fopenmp
+
+CrackPassword2: CrackPass.c time_diff.c time_diff.h
+	cc -o crack02 CrackPass.c time_diff.c -lrt -lcrypt -fopenmp
+
+EncryptPassword: EncryptPassword.c 
+	cc -o encrypt EncryptPassword.c -lcrypt 
 # penny02: penny02.c time_diff.c time_diff.h
 # 	cc -o penny02 penny02.c time_diff.c -lrt -pthread
 # penny03: penny03.c time_diff.c time_diff.h
