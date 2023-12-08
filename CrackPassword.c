@@ -64,7 +64,7 @@ void crack(char *salt_and_encrypted)
         {
           passwordMatchFound = 1;
           printf("#%-8d%s %s__%d\n", count, plain, enc, omp_get_thread_num());
-          // printf("\n\n\n\n\n\n\n\\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+          // printf("\n\n\n\n\n\n\n");
           omp_unset_lock(&lock);
           #pragma omp cancel for
           continue;
@@ -77,8 +77,10 @@ void crack(char *salt_and_encrypted)
   }
 }
 
-int main(int argc, char *argv[])
+int main()
 {
+  int threadNnumber;
+  printf("Number of THreads to use: ");scanf("%d",&threadNnumber);
 
   struct timespec start, finish;
   long long int difference;
@@ -86,22 +88,18 @@ int main(int argc, char *argv[])
 
   omp_init_lock(&lock);
 
-  // omp_set_num_threads(10);
+  omp_set_num_threads(threadNnumber);
 
   // passing the encrypted password to the crack function to decode it
 
-  // crack("$6$WhyN0t$nt4PYnVfPKe30w1iN86x6usGjG8c9S8yuZFAIJ8y9bhuGg.wk5ctoIf/icjys.1zukPhw9BETw1tFlbou3nMu."); // AA54
 
   // crack("$6$WhyN0t$VdZOpOx2hPYncxxdpQ1d4F1pRJnQ0lsLLKts3oKIPxfD5CVEMDMq43CIUjiBCgOcHE1/HRoOIMeTiBDLYrhWt/"); // TN09
 
-  // crack("$6$WhyN0t$nCGbPClJ/hmOoRvp3/iknoq//py7S4cVufggiBgxVdQ1yBIhMdH0zlshBS.9YMIvbGpNZOPPFUV02rHuy50F60"); // NG54
-
   crack("$6$WhyN0t$cPCekX8XV8LZtcl593QCRdxxo.GwC/LQTVayU5dz/yXSaEBJJLim9nKr4XBrCw9hiodp8fl3ilRXMM.HyfWW70"); // NA99
 
-  // crack("$6$WhyN0t$/AmNq0L.4gktdYxVQ/nGymPEp9VW/3bqJWOKz5wD1T4S7xOhSdWKwqhw4cgyg3knUqzu6RBUGj1xZSgcWMAIW0"); // XV73
+  // crack("$6$WhyN0t$.12IafO67JQFVKeJDk51b5sNLXhWTM/wjrIUs.3IuMQM6E5sqmjFLDTzjbo6kbUm4qmzla4.As8JLco0KI5tm1"); // WC23
 
   
-  // crack("$6$WhyN0t$o2hHwyDTVG.K5ncCaPfdOQdAY92nMS1NpTECPWSzoka7CgzuuM.EgOYcz/meyDu0j1uruKA7SVVHrqjZRYfiP."); // VR44
 
   printf("%d solutions explored\n", count);
 
