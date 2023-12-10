@@ -19,7 +19,7 @@ int main()
     int matrixnumber = 0;
 
     // Open the input file
-    inputFile = fopen("textdata.txt", "r");
+    inputFile = fopen("testdata.txt", "r");
     if (inputFile == NULL)
     {
         fprintf(stderr, "Error opening input file.\n");
@@ -83,28 +83,41 @@ int main()
             }
             if (matrixnumber > 1)
             {
-                printf("Third matrix___ %d __ %d \n ",cols[0],rows[1]);
-                matrices[matrixnumber] = (float **)calloc(cols[0], sizeof(float *));
+                rows[2] = rows[0];
+                cols[2] = cols[1];
+                printf("Third matrix___ %d __ %d \n",rows[2],cols[2]);
+                // printf("Third matrix___ %d __ %d \n",rows[0],cols[1]);
+                // printf("Third matrix___ %d __ %d \n",rows[1],cols[0]);
 
-                // declaring third matrix
+                // declaring rows of third matrix
+                matrices[matrixnumber] = (float **)calloc(rows[2], sizeof(float *));
+
+                // declaring columns of third matrix
                 for (int i = 0; i < cols[0]; i++)
                 {
-                    matrices[matrixnumber][i] = (float *)calloc(rows[1], sizeof(float));
+                    matrices[matrixnumber][i] = (float *)calloc(cols[2], sizeof(float));
                 }
 
                 // matrix multiplication
-                for (int i = 0; i < cols[0]; i++)
+                for (int i = 0; i < rows[2]; i++)
                 {
-                    for (int j = 0; j < rows[1]; j++)
+                    for (int j = 0; j < cols[2]; j++)
                     {
-                        matrices[matrixnumber][i][j] = 1;
+                        matrices[matrixnumber][i][j] = 0.0;
+                        for (int k = 0; k < rows[1]; k++)
+                        {
+                            printf("%f_____%f\t +  ",matrices[0][i][k] , matrices[1][k][j]);
+                            matrices[matrixnumber][i][j] += matrices[0][i][k] * matrices[1][k][j];
+                        }
+                        printf("\n");
+                        
                     }
                 }
 
                 // Displaying the matrix value
-                for (int i = 0; i < cols[0]; i++)
+                for (int i = 0; i < rows[2]; i++)
                 {
-                    for (int j = 0; j < rows[1]; j++)
+                    for (int j = 0; j < cols[2]; j++)
                     {
                         printf("%f  ", matrices[matrixnumber][i][j]);
                     }
