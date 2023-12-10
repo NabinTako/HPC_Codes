@@ -1,14 +1,18 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <crypt.h>
 #include <omp.h>
 #include "time_diff.h"
 
-int count = 0;          // A counter used to track the number of combinations explored so far
+int count = 0;   // A counter used to track the number of combinations explored so far
 omp_lock_t lock; // a lock for critical sections
-
 int passwordMatchFound = 0;
+
+struct timespec start, finish;
+long long int difference;
+
 void substr(char *dest, char *src, int start, int length)
 {
   memcpy(dest, src + start, length);
@@ -25,46 +29,53 @@ void substr(char *dest, char *src, int start, int length)
 
 void crack(char *salt_and_encrypted)
 {
-  int x, y, z;    // Loop counters
-  char salt[11];  // String used in hashing the password. Need space for \0 // incase you have modified the salt value, then should modifiy the number accordingly
+  int x, y, z;   // Loop counters
+  char salt[11]; // String used in hashing the password. Need space for \0 // incase you have modified the salt value, then should modifiy the number accordingly
   char plain[7]; // The combination of letters currently being checked // Please modifiy the number when you enlarge the encrypted password.
   char *enc;
-  
-  substr(salt, salt_and_encrypted, 0, 10);
 
+  substr(salt, salt_and_encrypted, 0, 10);
 
 #pragma omp parallel for collapse(3) private(x, y, z, plain, enc) shared(count, passwordMatchFound)
   for (x = 'A'; x <= 'Z'; x++)
-  { 
-    
+  {
+
     for (y = 'A'; y <= 'Z'; y++)
-    { 
-      
+    {
+
       for (z = 0; z <= 99; z++)
       {
-        if (passwordMatchFound == 1) {
-           #pragma omp cancel for
-            continue;
+
+        if (passwordMatchFound == 1)
+        {
+          exit(0);
         }
 
-        
         omp_set_lock(&lock);
         snprintf(plain, sizeof(plain), "%c%c%02d", x, y, z);
         enc = (char *)crypt(plain, salt);
-        
+
         count++;
-        
+
         if (strcmp(salt_and_encrypted, enc) == 0)
         {
           passwordMatchFound = 1;
           printf("#%-8d%s %s__%d\n", count, plain, enc, omp_get_thread_num());
           omp_unset_lock(&lock);
-          #pragma omp cancel for
-          continue;
 
-        } 
+          omp_destroy_lock(&lock);
+
+          clock_gettime(CLOCK_MONOTONIC, &finish);
+          time_difference(&start, &finish, &difference);
+
+          printf("%d solutions explored\n", count);
+
+          printf("program Run Time %9.5lfs\n", difference / 1000000000.0);
+
+          // Ending the program when the password is found
+          exit(0);
+        }
         omp_unset_lock(&lock);
-        
       }
     }
   }
@@ -73,10 +84,9 @@ void crack(char *salt_and_encrypted)
 int main()
 {
   int threadNnumber;
-  printf("Number of Threads to use: ");scanf("%d",&threadNnumber);
+  printf("Number of Threads to use: ");
+  scanf("%d", &threadNnumber);
 
-  struct timespec start, finish;
-  long long int difference;
   clock_gettime(CLOCK_MONOTONIC, &start);
 
   omp_init_lock(&lock);
@@ -85,17 +95,9 @@ int main()
 
   // passing the encrypted password to the crack function to decode it
 
+  // crack("$6$WhyN0t$VdZOpOx2hPYncxxdpQ1d4F1pRJnQ0lsLLKts3oKIPxfD5CVEMDMq43CIUjiBCgOcHE1/HRoOIMeTiBDLYrhWt/");
 
-  // crack("$6$WhyN0t$VdZOpOx2hPYncxxdpQ1d4F1pRJnQ0lsLLKts3oKIPxfD5CVEMDMq43CIUjiBCgOcHE1/HRoOIMeTiBDLYrhWt/"); 
+  crack("$6$WhyN0t$YHWmjxJ49Ob0xHhxZQuYsaJB5V8uukKIUYFnO.RSWKZOCB2H/i28hsPa2ibDXVicSHwAZUAkREqpc2P3066Fr1");
 
-  crack("$6$WhyN0t$cPCekX8XV8LZtcl593QCRdxxo.GwC/LQTVayU5dz/yXSaEBJJLim9nKr4XBrCw9hiodp8fl3ilRXMM.HyfWW70"); 
-
-
-  printf("%d solutions explored\n", count);
-
-  omp_destroy_lock(&lock);
-  clock_gettime(CLOCK_MONOTONIC, &finish);
-  time_difference(&start, &finish, &difference);
-  printf("program Time %9.5lfs\n", difference / 1000000000.0);
   return 0;
 }
