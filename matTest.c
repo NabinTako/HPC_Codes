@@ -22,8 +22,8 @@ int main()
     int resultMatrixDeclared = 0;
 
     // Open the input file
-    inputFile = fopen("testdata.txt", "r");
-    outputFile = fopen("tesst.txt", "w");
+    inputFile = fopen("MatData.txt", "r");
+    outputFile = fopen("output.txt", "w");
 
     if (inputFile == NULL || outputFile == NULL)
     {
@@ -104,7 +104,7 @@ int main()
                 }
 
                 // declaring columns of third matrix
-                for (int i = 0; i < cols[0]; i++)
+                for (int i = 0; i < cols[2]; i++)
                 {
                     matrices[2][i] = (double *)calloc(cols[2], sizeof(double));
                 }
@@ -114,11 +114,11 @@ int main()
                 #pragma omp parallel for
                 for (int i = 0; i < rows[2]; i++)
                 {
-                    printf("row %d:\n", i);
+                    // printf("row %d:\n", i);
                     #pragma omp parallel for
                     for (int j = 0; j < cols[2]; j++)
                     {
-                        printf("col %d:\t", j);
+                        // printf("col %d:\t", j);
                         matrices[2][i][j] = 0.0;
                         #pragma omp parallel for
                         for (int k = 0; k < cols[0]; k++)
@@ -129,13 +129,13 @@ int main()
                         fprintf(outputFile,"row/col: %d%d \t",i, j);
                         fprintf(outputFile, "%.02lf  \n", matrices[2][i][j]);
 
-                        printf("data: %.02lf\n", matrices[2][i][j]);
+                        // printf("data: %.02lf\n", matrices[2][i][j]);
 
                         omp_unset_lock(&lock);
 
                     }
-                    #pragma omp critical
-                    printf("\n");
+                    // #pragma omp critical
+                    // printf("\n");
                 }
                 #pragma omp critical
                 fprintf(outputFile, "\n");

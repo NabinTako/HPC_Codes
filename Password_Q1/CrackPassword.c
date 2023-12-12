@@ -6,7 +6,10 @@
 #include <omp.h>
 #include "time_diff.h"
 
-int count = 0;   // A counter used to track the number of combinations explored so far
+// compile the program by, gcc -o crack CrackPassword.c time_diff.c -lrt -lcrypt -fopenmp
+// or simply use make
+
+int passwordCounter = 0;   // A counter used to track the number of combinations explored so far
 omp_lock_t lock; // a lock for critical sections
 
 struct timespec start, finish;
@@ -29,12 +32,12 @@ void crack(char *encryptedPassword)
 {
   int x, y, z;   // Loop counters
   char salt[11]; // String used in hashing the password.
-  char plain[7]; // The combination of letters currently being checked
+  char passwordCombination[7]; // The combination of letters currently being checked
   char *enc;
 
   substr(salt, encryptedPassword, 0, 10);
 
-#pragma omp parallel for collapse(3) private(x, y, z, plain, enc) shared(count)
+#pragma omp parallel for collapse(3) private(x, y, z, passwordCombination, enc) shared(passwordCounter)
   for (x = 'A'; x <= 'Z'; x++)
   {
 
@@ -45,15 +48,15 @@ void crack(char *encryptedPassword)
       {
 
         omp_set_lock(&lock);
-        snprintf(plain, sizeof(plain), "%c%c%02d", x, y, z);
-        enc = (char *)crypt(plain, salt);
+        snprintf(passwordCombination, sizeof(passwordCombination), "%c%c%02d", x, y, z);
+        enc = (char *)crypt(passwordCombination, salt);
 
-        count++;
+        passwordCounter++;
 
         if (strcmp(encryptedPassword, enc) == 0)
         {
           
-          printf("#%-8d%s %s__%d\n", count, plain, enc, omp_get_thread_num());
+          printf("#%-8d%s %s__%d\n", passwordCounter, passwordCombination, enc, omp_get_thread_num());
           omp_unset_lock(&lock);
 
           omp_destroy_lock(&lock);
@@ -63,7 +66,7 @@ void crack(char *encryptedPassword)
           // canculating the time taken by the program to find the unique password.
           time_difference(&start, &finish, &difference);
 
-          printf("%d solutions explored\n", count);
+          printf("%d solutions explored\n", passwordCounter);
 
           printf("program Run Time %9.5lfs\n", difference / 1000000000.0);
 

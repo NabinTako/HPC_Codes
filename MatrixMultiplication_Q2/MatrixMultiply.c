@@ -2,7 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <omp.h>
-int main(int argc, char const *argv[])
+
+// compile the program by, gcc MatrixMultiply.c -o matrixMultiply -fopenmp
+// or simply use make
+
+int main()
 {
     FILE *inputFile, *outputFile;
     int rows[3], cols[3];
@@ -10,29 +14,29 @@ int main(int argc, char const *argv[])
 
     omp_lock_t lock; // a lock for critical sections
 
-    // for Initializing values in the rows
+    // for feeding values in the rows
     int currentMatrixRowIndex = 0;
     char *indivisualWords;
 
-    // Declare an array of pointers to 2D arrays
+    // Declaring an array of pointers to 2D arrays
     double ***matrices;
 
     // variable to keep check which matrix is being used
     int matrixnumber = 0;
     int resultMatrixDeclared = 0;
 
-    // Open the input file
-    inputFile = fopen(argv[1], "r");
-    outputFile = fopen(argv[2], "w");
+    // Opening the files
+    inputFile = fopen("MatData.txt", "r");
+    outputFile = fopen("MatMultiplicationOutput.txt", "w");
 
     if (inputFile == NULL || outputFile == NULL)
     {
-        fprintf(stderr, "Error opening input file.\n");
+        fprintf(stderr, "Cannot open the given file.\n");
         fclose(inputFile);
         fclose(outputFile);
         return 1;
     }
-    omp_init_lock(&lock);
+     omp_init_lock(&lock);
 
     matrices = (double ***)malloc(3 * sizeof(double **));
     ;
@@ -43,13 +47,11 @@ int main(int argc, char const *argv[])
     {
         if (line[0] != '\n')
         {
-            // Declaring othe 2D matrix
+            // Declaring 2D matrix
             if (matrixDeclared == 0)
             {
-                printf("%d\n", matrixnumber);
                 sscanf(line, "%d,%d", &rows[matrixnumber], &cols[matrixnumber]);
 
-                printf("%d __ %d\n", rows[matrixnumber], cols[matrixnumber]);
                 matrices[matrixnumber] = (double **)calloc(rows[matrixnumber], sizeof(double *));
                 for (int i = 0; i < rows[matrixnumber]; i++)
                 {
@@ -64,14 +66,14 @@ int main(int argc, char const *argv[])
 
                 indivisualWords = strtok(line, ",");
 
-                char *endptr; // Used to check for conversion errors
+                char *checkError; // Used to check for conversion errors
                 for (int i = 0; i < cols[matrixnumber]; i++)
                 {
-                    // change the strng numbers in to float data type.
-                    double colData = strtod(indivisualWords, &endptr);
+                    // change the string numbers in to float data type.
+                    double colData = strtod(indivisualWords, &checkError);
 
                     matrices[matrixnumber][currentMatrixRowIndex][i] = colData;
-                    //     // Get the next indivisualWords
+                    // Get the next numbers
                     indivisualWords = strtok(NULL, ",");
                 }
                 currentMatrixRowIndex++;
@@ -87,14 +89,13 @@ int main(int argc, char const *argv[])
             {
                 rows[2] = rows[0];
                 cols[2] = cols[1];
-                printf("Third matrix___ %d __ %d \n", rows[2], cols[2]);
 
                 // declaring rows of third matrix
                 matrices[2] = (double **)calloc(rows[2], sizeof(double *));
 
                 if (matrices[2] == NULL)
                 {
-                    fprintf(stderr, "Memory allocation failed.\n");
+                    fprintf(stderr, "Memory allocation failed.\n"); // log the error
                     fclose(inputFile);
                     fclose(outputFile);
                     free(matrices[0]);
@@ -108,38 +109,37 @@ int main(int argc, char const *argv[])
                 {
                     matrices[2][i] = (double *)calloc(cols[2], sizeof(double));
                 }
-
                 fprintf(outputFile, "%d,%d\n", rows[2], cols[2]);
 
-// matrix multiplication
-#pragma omp parallel for
+                // perform matrix multiplication
+                #pragma omp parallel for
                 for (int i = 0; i < rows[2]; i++)
                 {
-                    printf("row %d:\n", i);
-#pragma omp parallel for
+                    #pragma omp parallel for
                     for (int j = 0; j < cols[2]; j++)
                     {
-                        printf("col %d:\t", j);
+                        // initialize the column data
                         matrices[2][i][j] = 0.0;
-#pragma omp parallel for
+                        #pragma omp parallel for
                         for (int k = 0; k < cols[0]; k++)
                         {
                             matrices[2][i][j] += matrices[0][i][k] * matrices[1][k][j];
                         }
                         omp_set_lock(&lock);
-                        fprintf(outputFile, "row/col: %d%d \t", i, j);
+                        
+                        fprintf(outputFile,"row/col: %d%d \t",i, j);
+
                         fprintf(outputFile, "%.02lf  \n", matrices[2][i][j]);
 
-                        printf("data: %.02lf\n", matrices[2][i][j]);
-
                         omp_unset_lock(&lock);
+
                     }
                 }
-#pragma omp critical
+                #pragma omp critical
                 fprintf(outputFile, "\n");
+
                 matrixnumber = 0;
                 resultMatrixDeclared = 0;
-                printf("\n");
             }
         }
     }
@@ -157,9 +157,9 @@ int main(int argc, char const *argv[])
         }
         free(matrices[k]);
     }
-
+    
     free(matrices);
-
+    
     omp_destroy_lock(&lock);
 
     return 0;
