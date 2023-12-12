@@ -6,6 +6,13 @@
 // compile the program by, gcc MatrixMultiply.c -o matrixMultiply -fopenmp
 // or simply use make
 
+/* 
+    This program reads matrix data from given file, 
+    initializes a loop to declare and feed the data to matrices, 
+    and another loop is initialized to perform matrix calculations, 
+    writing the output to a second file.
+*/
+
 int main()
 {
     FILE *inputFile, *outputFile;
@@ -23,7 +30,6 @@ int main()
 
     // variable to keep check which matrix is being used
     int matrixnumber = 0;
-    int resultMatrixDeclared = 0;
 
     // Opening the files
     inputFile = fopen("MatData.txt", "r");
@@ -64,12 +70,12 @@ int main()
             else
             {
 
-                indivisualWords = strtok(line, ",");
+                indivisualWords = strtok(line, ","); // seperating the numbers with ","
 
                 char *checkError; // Used to check for conversion errors
                 for (int i = 0; i < cols[matrixnumber]; i++)
                 {
-                    // change the string numbers in to float data type.
+                    // changing the string numbers into double data type.
                     double colData = strtod(indivisualWords, &checkError);
 
                     matrices[matrixnumber][currentMatrixRowIndex][i] = colData;
@@ -109,7 +115,7 @@ int main()
                 {
                     matrices[2][i] = (double *)calloc(cols[2], sizeof(double));
                 }
-                fprintf(outputFile, "%d,%d\n", rows[2], cols[2]);
+                fprintf(outputFile, "Matrix Size: %d by %d\n\n", rows[2], cols[2]);
 
                 // perform matrix multiplication
                 #pragma omp parallel for
@@ -127,7 +133,7 @@ int main()
                         }
                         omp_set_lock(&lock);
                         
-                        fprintf(outputFile,"row/col: %d%d \t",i, j);
+                        fprintf(outputFile,"row/col: %d%d   ",i, j);
 
                         fprintf(outputFile, "%.02lf  \n", matrices[2][i][j]);
 
@@ -139,7 +145,6 @@ int main()
                 fprintf(outputFile, "\n");
 
                 matrixnumber = 0;
-                resultMatrixDeclared = 0;
             }
         }
     }
