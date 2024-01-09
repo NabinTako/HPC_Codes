@@ -1,8 +1,6 @@
 #include<stdio.h>
 #include<crypt.h>
 
-// #define SALT "$6$ND$"
-// #define SALT "$6$AS$"
 #define SALT "$6$WhyN0t$"
 
 int main(int argc, char *argv[]){

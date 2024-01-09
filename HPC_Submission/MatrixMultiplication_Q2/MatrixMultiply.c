@@ -47,7 +47,7 @@ int main()
     matrices = (double ***)malloc(3 * sizeof(double **));
     ;
     // Read and check each line from the file
-    char line[256]; // Assuming a maximum line length of 255 characters
+    char line[201]; // Assuming a maximum line length of 200 characters
 
     while (fgets(line, sizeof(line), inputFile) != NULL)
     {
@@ -96,7 +96,7 @@ int main()
                 rows[2] = rows[0];
                 cols[2] = cols[1];
 
-                // declaring rows of third matrix
+                // declaring rows of resulting product matrix
                 matrices[2] = (double **)calloc(rows[2], sizeof(double *));
 
                 if (matrices[2] == NULL)
@@ -110,7 +110,7 @@ int main()
                     return 1;
                 }
 
-                // declaring columns of third matrix
+                // declaring columns of resulting product matrix
                 for (int i = 0; i < cols[2]; i++)
                 {
                     matrices[2][i] = (double *)calloc(cols[2], sizeof(double));
@@ -133,9 +133,9 @@ int main()
                         }
                         omp_set_lock(&lock);
                         
-                        fprintf(outputFile,"row/col: %d%d   ",i, j);
+                        fprintf(outputFile,"row/col: %d%d       \t\t",i, j);
 
-                        fprintf(outputFile, "%.02lf  \n", matrices[2][i][j]);
+                        fprintf(outputFile, "%lf  \n", matrices[2][i][j]);
 
                         omp_unset_lock(&lock);
 
@@ -166,6 +166,8 @@ int main()
     free(matrices);
     
     omp_destroy_lock(&lock);
+
+    printf("Check the MatMultiplicationOutput.txt file created.\n");
 
     return 0;
 }
