@@ -1,7 +1,10 @@
-all: CrackPassword  
+all: Encrypt  CrackPassword
 
-CrackPassword: CrackPassword.cu 
-	nvcc -Wno-deprecated-gpu-targets -o crackPassword CrackPassword.cu  -lrt 
+Encrypt: Encrypt.c 
+	gcc Encrypt.c -o EncryptPassword 
+	
+CrackPassword: CrackPassword.cu
+	nvcc -Wno-deprecated-gpu-targets -o crackPassword CrackPassword.cu -lrt 
 
 clean:
-	rm -f CrackPassword *~ a.out
+	rm -f CrackPassword   *~ a.out
