@@ -9,8 +9,8 @@ char* Crypt(char* rawPassword){
 
 	char * newPassword = (char *) malloc(sizeof(rawPassword));
 
-    int z_AsciiValue = 122; // As ASCii value of Z is 90.
-    int a_AsciiValue = 97; // As ASCii value of A is 65.
+    int z_AsciiValue = 122; // As ASCii value of Z is 122.
+    int a_AsciiValue = 97; // As ASCii value of A is 97.
  
 	newPassword[0] = rawPassword[0] + 2;
 	newPassword[1] = rawPassword[0] - 2;
@@ -45,8 +45,10 @@ char* Crypt(char* rawPassword){
 int main(int argc, char  *argv[])
 {
     
-    char * test= Crypt(argv[1]);
+    char * encrypedPassword= Crypt(argv[1]);
 
-    printf("%s\n",test);
-    free(test);
+    printf("%s\n",encrypedPassword);
+    free(encrypedPassword);
+
+	return 0;
 }
